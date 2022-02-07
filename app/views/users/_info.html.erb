@@ -1,12 +1,12 @@
 <table class='table'>
   <tr><%= image_tag user.get_profile_image, size:'100x100' %></tr>
   <tr>
-	  <th>name</th>
-	  <th><%= user.name %></th>
+    <th>name</th>
+    <th><%= user.name %></th>
   </tr>
   <tr>
-	  <th>introduction</th>
-	  <th><%= user.introduction %></th>
+    <th>introduction</th>
+    <th><%= user.introduction %></th>
   </tr>
   <tr>
     <th>follows</th>
@@ -17,19 +17,35 @@
     <th><%= link_to user.followers.count, user_followers_path(user) %></th>
   </tr>
 </table>
-
-<div class='row'>
-  <% if user == current_user %>
-    <%= link_to edit_user_path(user), class: "btn btn-outline-secondary btn-block edit_user_#{user.id}" do %>
-      <i class="fas fa-user-cog"></i>
-    <% end %>
-  <% else %>
-    <% unless current_user == user %>
-      <% if current_user.following?(user) %>
-        <%= link_to 'フォローを外す', user_relationships_path(user.id), method: :delete, class: "btn btn-info" %>
-      <% else %>
-        <%= link_to 'フォローする', user_relationships_path(user.id), method: :post, class: "btn btn-success" %>
+<tbody>
+  <tr>
+    <td>
+      <% if current_user != user %>
+        <% if current_user.following?(user) %>
+          <%= link_to "フォロー外す", user_relationships_path(user_id: user, id: user), method: :delete, class:"btn btn-sm btn-info" %>
+        <% else %>
+          <%= link_to "フォローする", user_relationships_path(user.id), method: :post, class:"btn btn-sm btn-success" %>
+        <% end %>
+        <% if (current_user.following? user) && (user.following? current_user) %> <!--相互フォロー-->
+          <% if @isRoom == true %>
+            <%= link_to 'チャットへ', room_path(@roomId) %>
+          <% else %>
+            <%= form_with @room, local: true do |f| %> <!--親モデルのRoomsテーブル-->
+              <%= fields_for @entry do |e| %> <!--子モデルのEntriesテーブル-->
+                <%= e.hidden_field :user_id, value: user.id %> <!--Entriesテーブルのレコードにはuser_idを送る-->
+              <% end %>
+                <%= f.submit "チャットを始める", class:"btn btn-primary btn-sm user-show-chat mt-3"%>
+            <% end %>
+          <% end %>
+        <% end %>
       <% end %>
-    <% end %>
+    </td>
+  </tr>
+  </tbody>
+  <% if current_user == user %>
+    <div class="row">
+      <%= link_to edit_user_path(user.id), class:"btn btn-outline-secondary btn-block" do %>
+        <i class="fas fa-user-cog"></i>
+      <% end %>
+    </div>
   <% end %>
-</div>
